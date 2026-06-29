@@ -12,7 +12,7 @@ config_version=5
 
 config/name="VNHub Ecosystem"
 config/description="A Godot toolkit/ecosystem for building visual novels."
-config/version="0.1.0"
+config/version="0.2.0"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"
 

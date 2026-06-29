@@ -27,7 +27,10 @@ const CONFIG_SETTING := "vnhub_ecosystem/resource_manager/config"
 
 # --- Конфигурация (заполняется из VNHubResourceManagerConfig / register_*) ----
 
-## База, откуда качаются паки на вебе. Должна заканчиваться на "/".
+## База, откуда качаются паки на вебе. Если задана — должна заканчиваться на "/".
+## Пусто или относительный путь => пак качается относительно текущей директории
+## (на вебе — относительно текущей страницы). На десктопе паки не качаются вовсе —
+## они ищутся локально относительно текущей рабочей директории.
 var base_url: String = ""
 
 ## Доля прогресса (0..100), отводимая под скачивание+монтирование пака.
@@ -174,11 +177,16 @@ func _ensure_pack(id: StringName) -> bool:
 
 	var path := _pack_local_path(pack_file)
 
-	# На вебе качаем в user:// (IndexedDB кэширует между сессиями).
-	if OS.has_feature("web") and not FileAccess.file_exists(path):
-		if not await _download_pack(pack_file, path, id):
+	if OS.has_feature("web"):
+		# На вебе качаем в user:// (IndexedDB кэширует между сессиями).
+		if not FileAccess.file_exists(path):
+			if not await _download_pack(pack_file, path, id):
+				return false
+	else:
+		# Десктоп: пак ищем локально (относительно текущей директории), без скачивания.
+		if not FileAccess.file_exists(path):
+			push_error("ResourceManager: пак не найден локально: %s" % path)
 			return false
-	# На десктопе pck лежит рядом с исполняемым файлом (path уже указывает туда).
 
 	load_progress.emit(id, pack_weight)
 
@@ -189,9 +197,7 @@ func _ensure_pack(id: StringName) -> bool:
 	return true
 
 func _download_pack(pack_file: String, path: String, id: StringName) -> bool:
-	if base_url == "":
-		push_error("ResourceManager: base_url не задан — скачивание пака %s невозможно." % pack_file)
-		return false
+	var url := _resolve_pack_url(pack_file)
 
 	var http := HTTPRequest.new()
 	add_child(http)
@@ -205,7 +211,7 @@ func _download_pack(pack_file: String, path: String, id: StringName) -> bool:
 			done.finished = true
 	)
 
-	if http.request(base_url + pack_file + ".pck") != OK:
+	if http.request(url) != OK:
 		http.queue_free()
 		push_error("ResourceManager: не удалось начать запрос пака %s" % pack_file)
 		return false
@@ -278,10 +284,28 @@ func _preload_assets(id: StringName) -> void:
 
 # --- Хелперы -----------------------------------------------------------------
 
+## URL для скачивания пака (только веб). HTTPRequest требует абсолютный URL со
+## схемой http(s):// — относительный путь он отвергает ("Malformed URL").
+## Поэтому пустой/относительный base_url резолвим относительно текущей страницы
+## через браузерный URL API (учитывает и <base href>).
+func _resolve_pack_url(pack_file: String) -> String:
+	var rel := base_url + "%s.pck" % pack_file
+	var low := rel.to_lower()
+	if low.begins_with("http://") or low.begins_with("https://"):
+		return rel
+	if OS.has_feature("web"):
+		var js := "new URL(%s, document.baseURI).href" % JSON.stringify(rel)
+		var resolved = JavaScriptBridge.eval(js, true)
+		if resolved is String and resolved != "":
+			return resolved
+	return rel
+
+
 func _pack_local_path(pack_file: String) -> String:
 	if OS.has_feature("web"):
 		return "user://%s.pck" % pack_file
-	return OS.get_executable_path().get_base_dir().path_join("%s.pck" % pack_file)
+	# Десктоп: относительный путь резолвится от текущей рабочей директории.
+	return "%s.pck" % pack_file
 
 func _on_dialogic_signal(argument) -> void:
 	var key := str(argument)
