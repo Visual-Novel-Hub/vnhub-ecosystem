@@ -1,0 +1,36 @@
+name: Build Addon
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build addon archive
+        run: |
+          ADDON_NAME=vnhub_ecosystem
+          ZIP_NAME="${ADDON_NAME}-${GITHUB_REF_NAME}.zip"
+          echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
+          zip -r "${ZIP_NAME}" addons/${ADDON_NAME} README.md LICENSE 2>/dev/null || \
+          zip -r "${ZIP_NAME}" addons/${ADDON_NAME} README.md
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_NAME }}
+          generate_release_notes: true
