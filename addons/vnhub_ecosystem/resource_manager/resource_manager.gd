@@ -48,11 +48,7 @@ var _queue: Array[StringName] = []
 func _ready() -> void:
 	_load_config_from_settings()
 
-	var dlg := get_node_or_null("/root/Dialogic")
-	if dlg and dlg.has_signal("signal_event"):
-		dlg.signal_event.connect(_on_dialogic_signal)
-	else:
-		push_warning("ResourceManager: Dialogic.signal_event не найден — авто-предзагрузка по сигналам отключена.")
+	Dialogic.signal_event.connect(_on_dialogic_signal)
 
 
 func _load_config_from_settings() -> void:

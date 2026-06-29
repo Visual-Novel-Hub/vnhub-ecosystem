@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://c3iljy6b83h48"]
+
+[ext_resource type="Script" path="res://addons/vnhub_ecosystem/save_loader/save_loader.gd" id="1_x6vps"]
+
+[node name="SaveLoader" type="Node"]
+script = ExtResource("1_x6vps")
+game_name = ""
+
+[node name="HTTPRequestLoader" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequestSaver" type="HTTPRequest" parent="."]
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 10.0

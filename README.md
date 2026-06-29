@@ -23,12 +23,16 @@ icon.svg                               # Project icon
 addons/vnhub_ecosystem/
 ├── plugin.cfg                         # Plugin manifest
 ├── plugin.gd                          # EditorPlugin entry point (registers autoloads)
-└── resource_manager/                  # ResourceManager component
+├── resource_manager/                  # ResourceManager component
+│   ├── README.md                      # Component docs
+│   ├── resource_manager.gd            # Content-pack manager (autoload: ResourceManager)
+│   ├── resource_manager.tscn
+│   ├── resource_manager_config.gd     # VNHubResourceManagerConfig (settings + pack list)
+│   └── content_pack.gd                # VNHubContentPack (id, pack name, assets, signal)
+└── save_loader/                       # SaveLoader component
     ├── README.md                      # Component docs
-    ├── resource_manager.gd            # Content-pack manager (autoload: ResourceManager)
-    ├── resource_manager.tscn
-    ├── resource_manager_config.gd     # VNHubResourceManagerConfig (settings + pack list)
-    └── content_pack.gd                # VNHubContentPack (id, pack name, assets, signal)
+    ├── save_loader.gd                 # Dialogic save sync with the VNHub backend
+    └── save_loader.tscn
 ```
 
 ## Components
@@ -40,3 +44,8 @@ addons/vnhub_ecosystem/
   (path set in `Project Settings → vnhub_ecosystem/resource_manager/config`) or
   at runtime via `register_pack()`. Keyed by `StringName` — no enum/script edits.
   See [`addons/vnhub_ecosystem/resource_manager/README.md`](addons/vnhub_ecosystem/resource_manager/README.md).
+- **SaveLoader** — server-side save sync for Dialogic 2.x against the VNHub
+  backend (`vnhub.ru`): pulls saves into Dialogic slots on start, pushes each
+  save back, with timer-based autosave. Add as an autoload yourself and set
+  `game_name` (requires Dialogic).
+  See [`addons/vnhub_ecosystem/save_loader/README.md`](addons/vnhub_ecosystem/save_loader/README.md).
