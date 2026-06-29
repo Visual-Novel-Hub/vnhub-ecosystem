@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvnresmgr01mss"]
+
+[ext_resource type="Script" path="res://addons/vnhub_ecosystem/resource_manager/resource_manager.gd" id="1_vnrm"]
+
+[node name="ResourceManager" type="Node"]
+script = ExtResource("1_vnrm")

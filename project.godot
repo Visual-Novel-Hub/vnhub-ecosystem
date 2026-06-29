@@ -1,0 +1,21 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="VNHub Ecosystem"
+config/description="A Godot toolkit/ecosystem for building visual novels."
+config/version="0.1.0"
+config/features=PackedStringArray("4.6")
+config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/vnhub_ecosystem/plugin.cfg")
